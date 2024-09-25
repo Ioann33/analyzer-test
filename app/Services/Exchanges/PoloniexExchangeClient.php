@@ -2,6 +2,9 @@
 
 namespace App\Services\Exchanges;
 
+use App\DTO\MarkerRateDTO;
+use Exception;
+
 class PoloniexExchangeClient extends BaseExchangeClient
 {
     public const EXCHANGE = 'poloniex';
@@ -10,12 +13,18 @@ class PoloniexExchangeClient extends BaseExchangeClient
     {
         return $this->send('/markets/price');
     }
-    public function getPairRatioItem(string $pair): array
+    public function getPairRatioItem(string $pair): MarkerRateDTO
     {
         $pairs = $this->getPairRatioList();
-        foreach ($pairs as $pair) {
-
+        foreach ($pairs as $item) {
+            if ($this->formatPair($item['symbol']) === $this->formatPair($pair)) {
+                return MarkerRateDTO::create([
+                    'exchange' => ucfirst(static::EXCHANGE),
+                    'pair' => str_replace('_', '', $item['symbol']),
+                    'rate' => $item['price']
+                ]);
+            }
         }
-        return [];
+        throw new Exception('Exchange: '.static::EXCHANGE.' does not support pair: '.$pair);
     }
 }

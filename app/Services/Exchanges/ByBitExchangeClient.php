@@ -2,6 +2,9 @@
 
 namespace App\Services\Exchanges;
 
+use App\DTO\MarkerRateDTO;
+use Exception;
+
 class ByBitExchangeClient extends BaseExchangeClient
 {
     public const EXCHANGE = 'by-bit';
@@ -10,12 +13,18 @@ class ByBitExchangeClient extends BaseExchangeClient
     {
         return $this->send('/v5/market/tickers', ['category' => 'spot'])['result']['list'] ?? [];
     }
-    public function getPairRatioItem(string $pair): array
+    public function getPairRatioItem(string $pair): MarkerRateDTO
     {
         $pairs = $this->getPairRatioList();
-        foreach ($pairs as $pair) {
-
+        foreach ($pairs as $item) {
+            if ($this->formatPair($item['symbol']) === $this->formatPair($pair)) {
+                return MarkerRateDTO::create([
+                    'exchange' => str_replace('-','', ucfirst(static::EXCHANGE)),
+                    'pair' => $item['symbol'],
+                    'rate' => $item['lastPrice']
+                ]);
+            }
         }
-        return [];
+        throw new Exception('Exchange: '.static::EXCHANGE.' does not support pair: '.$pair);
     }
 }

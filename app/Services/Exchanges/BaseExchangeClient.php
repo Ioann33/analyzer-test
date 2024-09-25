@@ -2,6 +2,7 @@
 
 namespace App\Services\Exchanges;
 
+use App\DTO\MarkerRateDTO;
 use Exception;
 use Illuminate\Support\Facades\Http;
 
@@ -11,12 +12,21 @@ abstract class BaseExchangeClient
     protected string $host;
     abstract public function getPairRatioList(): array;
 
+    final public function __construct()
+    {
+    }
+
+    public static function create(): static
+    {
+        return new static();
+    }
+
     /**
      * @param string $pair
-     * @return array
+     * @return MarkerRateDTO
      * @throws Exception
      */
-    abstract public function getPairRatioItem(string $pair): array;
+    abstract public function getPairRatioItem(string $pair): MarkerRateDTO;
     public function send(string $path, array $params = [], string $method = 'GET'): array
     {
         $response = Http::$method($this->host.$path, $params);

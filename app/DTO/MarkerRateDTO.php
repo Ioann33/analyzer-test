@@ -23,4 +23,13 @@ class MarkerRateDTO extends BaseDTO
     {
         return (float) $this->source['rate'] ?? null;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'exchange' => $this->exchange(),
+            'pair' => $this->pair(),
+            'rate' => $this->rate()
+        ];
+    }
 }

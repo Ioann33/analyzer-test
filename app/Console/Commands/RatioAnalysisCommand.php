@@ -2,11 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Exchanges\BinanceExchangeClient;
-use App\Services\Exchanges\ByBitExchangeClient;
-use App\Services\Exchanges\JbexExchangeClient;
-use App\Services\Exchanges\PoloniexExchangeClient;
-use App\Services\Exchanges\WhiteBitExchangeClient;
+use App\Handlers\RatioAnalysisHandler;
+use Exception;
 use Illuminate\Console\Command;
 
 class RatioAnalysisCommand extends Command
@@ -28,10 +25,20 @@ class RatioAnalysisCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(BinanceExchangeClient $client)
+    public function handle(RatioAnalysisHandler $handler): void
     {
         $pair = explode('=', $this->argument('pair'))[1];
-//        print_r($client->getPairRatioList());
-
+        try {
+            $extremesRadioData = $handler->getRatioExtremes($pair);
+            $this->table(
+                ['exchange', 'pair', 'rate'],
+                [
+                    $extremesRadioData['min']->toArray(),
+                    $extremesRadioData['max']->toArray()
+                ]
+            );
+        } catch (Exception $e) {
+            $this->error($e->getMessage());
+        }
     }
 }

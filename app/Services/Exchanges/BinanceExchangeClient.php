@@ -2,6 +2,9 @@
 
 namespace App\Services\Exchanges;
 
+use App\DTO\MarkerRateDTO;
+use Exception;
+
 class BinanceExchangeClient extends BaseExchangeClient
 {
     public const EXCHANGE = 'binance';
@@ -11,12 +14,18 @@ class BinanceExchangeClient extends BaseExchangeClient
         return $this->send('/api/v3/ticker/price');
     }
 
-    public function getPairRatioItem(string $pair): array
+    public function getPairRatioItem(string $pair): MarkerRateDTO
     {
        $pairs = $this->getPairRatioList();
-       foreach ($pairs as $pair) {
-
+       foreach ($pairs as $item) {
+           if ($this->formatPair($item['symbol']) === $this->formatPair($pair)) {
+               return MarkerRateDTO::create([
+                    'exchange' => ucfirst(static::EXCHANGE),
+                    'pair' => $item['symbol'],
+                    'rate' => $item['price']
+               ]);
+           }
        }
-       return [];
+       throw new Exception('Exchange: '.static::EXCHANGE.' does not support pair: '.$pair);
     }
 }
