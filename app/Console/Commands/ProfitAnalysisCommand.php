@@ -31,7 +31,14 @@ class ProfitAnalysisCommand extends Command
         'AVAXUSDT',
         'DOTUSDT',
         'DOGEUSDT',
-        'TRXUSDT'
+        'TRXUSDT',
+        'FILUSDT',
+        'UNIUSDT',
+        'SUIUSDT',
+        'NEARUSDT',
+        'SSVUSDT',
+        'ENSUSDT',
+        'OPUSDT'
     ];
 
     /**
