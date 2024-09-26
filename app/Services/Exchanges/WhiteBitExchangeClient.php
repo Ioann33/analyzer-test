@@ -9,9 +9,12 @@ class WhiteBitExchangeClient extends BaseExchangeClient
 {
     public const EXCHANGE = 'white-bit';
     protected string $host = 'https://whitebit.com';
-    public function getPairRatioList(): array
+    public function getPairRatioList(bool $forceRefresh = false): array
     {
-        return $this->send('/api/v4/public/ticker');
+        if (empty($this->pairRatioList) || $forceRefresh) {
+            $this->pairRatioList = $this->send('/api/v4/public/ticker');
+        }
+        return $this->pairRatioList;
     }
     public function getPairRatioItem(string $pair): MarkerRateDTO
     {

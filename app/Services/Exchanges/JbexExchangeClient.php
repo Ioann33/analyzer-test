@@ -9,9 +9,12 @@ class JbexExchangeClient extends BaseExchangeClient
 {
     public const EXCHANGE = 'jbex';
     protected string $host = 'https://api.jbex.com';
-    public function getPairRatioList(): array
+    public function getPairRatioList(bool $forceRefresh = false): array
     {
-        return $this->send('/openapi/quote/v1/ticker/price');
+        if (empty($this->pairRatioList) || $forceRefresh) {
+            $this->pairRatioList = $this->send('/openapi/quote/v1/ticker/price');
+        }
+        return $this->pairRatioList;
     }
     public function getPairRatioItem(string $pair): MarkerRateDTO
     {

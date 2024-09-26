@@ -10,7 +10,8 @@ abstract class BaseExchangeClient
 {
     public const EXCHANGE = '';
     protected string $host;
-    abstract public function getPairRatioList(): array;
+    protected array $pairRatioList = [];
+    abstract public function getPairRatioList(bool $forceRefresh = false): array;
 
     final public function __construct()
     {

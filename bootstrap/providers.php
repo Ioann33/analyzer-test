@@ -2,5 +2,5 @@
 
 return [
     App\Providers\AppServiceProvider::class,
-    App\Providers\RatioAnalysisProvider::class,
+    App\Providers\AnalysisCommandProvider::class,
 ];

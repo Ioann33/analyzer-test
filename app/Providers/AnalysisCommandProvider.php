@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
+use App\Console\Commands\ProfitAnalysisCommand;
 use App\Console\Commands\RatioAnalysisCommand;
 use Illuminate\Support\ServiceProvider;
 
-class RatioAnalysisProvider extends ServiceProvider
+class AnalysisCommandProvider extends ServiceProvider
 {
     /**
      * Register services.
@@ -22,7 +23,8 @@ class RatioAnalysisProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                RatioAnalysisCommand::class
+                RatioAnalysisCommand::class,
+                ProfitAnalysisCommand::class,
             ]);
         }
     }

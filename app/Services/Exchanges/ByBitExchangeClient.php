@@ -9,9 +9,12 @@ class ByBitExchangeClient extends BaseExchangeClient
 {
     public const EXCHANGE = 'by-bit';
     protected string $host = 'https://api.bybit.com';
-    public function getPairRatioList(): array
+    public function getPairRatioList(bool $forceRefresh = false): array
     {
-        return $this->send('/v5/market/tickers', ['category' => 'spot'])['result']['list'] ?? [];
+        if (empty($this->pairRatioList) || $forceRefresh) {
+            $this->pairRatioList = $this->send('/v5/market/tickers', ['category' => 'spot'])['result']['list'] ?? [];
+        }
+        return $this->pairRatioList;
     }
     public function getPairRatioItem(string $pair): MarkerRateDTO
     {

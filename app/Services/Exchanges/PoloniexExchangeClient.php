@@ -9,9 +9,12 @@ class PoloniexExchangeClient extends BaseExchangeClient
 {
     public const EXCHANGE = 'poloniex';
     protected string $host = 'https://api.poloniex.com';
-    public function getPairRatioList(): array
+    public function getPairRatioList(bool $forceRefresh = false): array
     {
-        return $this->send('/markets/price');
+        if (empty($this->pairRatioList) || $forceRefresh) {
+            $this->pairRatioList = $this->send('/markets/price');
+        }
+        return $this->pairRatioList;
     }
     public function getPairRatioItem(string $pair): MarkerRateDTO
     {

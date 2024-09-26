@@ -24,6 +24,10 @@ class RatioAnalysisHandler
         WhiteBitExchangeClient::class,
     ];
 
+    protected array $clientInstances = [
+
+    ];
+
 
     /**
      * @var array<int, MarkerRateDTO>
@@ -31,15 +35,25 @@ class RatioAnalysisHandler
     protected array $crossExchangeRatioData = [];
 
 
-
+    /**
+     * @template T
+     * @param class-string<T> $class
+     * @return T
+     */
+    public function getSingletonInstance(string $class)
+    {
+        if (!isset($this->clientInstances[$class::EXCHANGE])) {
+            $this->clientInstances[$class::EXCHANGE] = app($class);
+        }
+        return $this->clientInstances[$class::EXCHANGE];
+    }
     /**
      * @throws Exception
      */
     protected function extractRatioData(string $pair): void
     {
         foreach ($this->clients as $client){
-            /** @var BaseExchangeClient $clientInstance */
-            $clientInstance = $client::create();
+            $clientInstance = $this->getSingletonInstance($client);
             $this->crossExchangeRatioData[] = $clientInstance->getPairRatioItem($pair);
         }
     }
@@ -73,5 +87,42 @@ class RatioAnalysisHandler
     {
         $this->extractRatioData($pair);
         return $this->calculateRatioExtremes();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getPairMargins(array $pairs): array
+    {
+        $data = [];
+        foreach ($pairs as $pair) {
+            $this->extractRatioData($pair);
+            $data[$pair] = $this->calculateRatioExtremes();
+            $this->crossExchangeRatioData = [];
+        }
+        return $this->mapPairMarginData($data);
+    }
+
+    /**
+     * @param array<string, array<string, MarkerRateDTO>> $pairs
+     * @return array<string, string>
+     */
+    protected function mapPairMarginData(array $pairs): array
+    {
+        $result = [];
+        foreach ($pairs as $key => $rationExtremes) {
+            $result[] = [
+                'pair' => $key,
+                'buy' => $rationExtremes['min']->exchange . ' ('.$rationExtremes['min']->rate.') ',
+                'sell' => $rationExtremes['max']->exchange . ' ('.$rationExtremes['max']->rate.') ',
+                'profit' => $this->calculateMargin($rationExtremes['min']->rate, $rationExtremes['max']->rate).'%'
+            ];
+        }
+        return $result;
+    }
+
+    protected function calculateMargin(float $minRate, float $maxRate): string
+    {
+        return number_format((($maxRate - $minRate) / $minRate) * 100, 2);
     }
 }

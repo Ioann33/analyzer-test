@@ -9,9 +9,12 @@ class BinanceExchangeClient extends BaseExchangeClient
 {
     public const EXCHANGE = 'binance';
     protected string $host = 'https://api.binance.com';
-    public function getPairRatioList(): array
+    public function getPairRatioList(bool $forceRefresh = false): array
     {
-        return $this->send('/api/v3/ticker/price');
+        if (empty($this->pairRatioList) || $forceRefresh) {
+            $this->pairRatioList = $this->send('/api/v3/ticker/price');
+        }
+        return $this->pairRatioList;
     }
 
     public function getPairRatioItem(string $pair): MarkerRateDTO
