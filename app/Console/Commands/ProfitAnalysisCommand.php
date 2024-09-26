@@ -37,7 +37,7 @@ class ProfitAnalysisCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(RatioAnalysisHandler $handler)
+    public function handle(RatioAnalysisHandler $handler): void
     {
         try {
             $this->table(
