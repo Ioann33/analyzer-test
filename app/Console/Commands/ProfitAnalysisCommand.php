@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Handlers\RatioAnalysisHandler;
+use App\Services\Exchanges\BinanceExchangeClient;
 use Exception;
 use Illuminate\Console\Command;
 
@@ -38,18 +39,32 @@ class ProfitAnalysisCommand extends Command
         'NEARUSDT',
         'SSVUSDT',
         'ENSUSDT',
-        'OPUSDT'
+        'OPUSDT',
+        'LTCUSDT',
+        'ADAUSDT',
+        'NEOUSDT',
+        'ETCUSDT',
+        'LINKUSDT',
+        'DASHUSDT',
+        'ATOMUSDT',
     ];
 
     /**
      * Execute the console command.
      */
-    public function handle(RatioAnalysisHandler $handler): void
+    public function handle(RatioAnalysisHandler $handler, BinanceExchangeClient $client): void
     {
+        $pairList = $client->getPairRatioList();
+        $pairList = array_map(function($item) {
+            return $item['symbol'];
+        }, $pairList);
+        $pairList = array_filter($pairList, function($item) {
+            return str_ends_with($item, 'USDT');
+        });
         try {
             $this->table(
                 ['pair', 'buy', 'sell', 'profit'],
-                $handler->getPairMargins($this->pairList)
+                $handler->getPairMargins($pairList)
             );
         } catch (Exception $e) {
             $this->error($e->getMessage());

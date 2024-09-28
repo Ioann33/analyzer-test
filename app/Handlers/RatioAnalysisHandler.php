@@ -6,6 +6,7 @@ use App\DTO\MarkerRateDTO;
 use App\Services\Exchanges\BaseExchangeClient;
 use App\Services\Exchanges\BinanceExchangeClient;
 use App\Services\Exchanges\ByBitExchangeClient;
+use App\Services\Exchanges\ExmoExchangeClient;
 use App\Services\Exchanges\JbexExchangeClient;
 use App\Services\Exchanges\PoloniexExchangeClient;
 use App\Services\Exchanges\WhiteBitExchangeClient;
@@ -19,9 +20,10 @@ class RatioAnalysisHandler
     protected array $clients = [
         BinanceExchangeClient::class,
         ByBitExchangeClient::class,
-        JbexExchangeClient::class,
+//        JbexExchangeClient::class,
         PoloniexExchangeClient::class,
         WhiteBitExchangeClient::class,
+        ExmoExchangeClient::class,
     ];
 
     protected array $clientInstances = [
@@ -53,8 +55,13 @@ class RatioAnalysisHandler
     protected function extractRatioData(string $pair): void
     {
         foreach ($this->clients as $client){
+            /** @var BaseExchangeClient $clientInstance */
             $clientInstance = $this->getSingletonInstance($client);
-            $this->crossExchangeRatioData[] = $clientInstance->getPairRatioItem($pair);
+            try {
+                $this->crossExchangeRatioData[] = $clientInstance->getPairRatioItem($pair);
+            } catch (Exception $e) {
+
+            }
         }
     }
 
@@ -111,12 +118,15 @@ class RatioAnalysisHandler
     {
         $result = [];
         foreach ($pairs as $key => $rationExtremes) {
-            $result[] = [
-                'pair' => $key,
-                'buy' => $rationExtremes['min']->exchange . ' ('.$rationExtremes['min']->rate.') ',
-                'sell' => $rationExtremes['max']->exchange . ' ('.$rationExtremes['max']->rate.') ',
-                'profit' => $this->calculateMargin($rationExtremes['min']->rate, $rationExtremes['max']->rate).'%'
-            ];
+            $profit = $this->calculateMargin($rationExtremes['min']->rate, $rationExtremes['max']->rate);
+            if ($profit > 1 && $profit < 100) {
+                $result[] = [
+                    'pair' => $key,
+                    'buy' => $rationExtremes['min']->exchange . ' ('.$rationExtremes['min']->rate.') ',
+                    'sell' => $rationExtremes['max']->exchange . ' ('.$rationExtremes['max']->rate.') ',
+                    'profit' => $profit."%"
+                ];
+            }
         }
         return $result;
     }
